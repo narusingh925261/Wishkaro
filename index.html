@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>स्मार्ट बधाई ऐप - Direct Share</title>
+    <title>डिजिटल बधाई मेकर - फोटो और लिंक शेयर</title>
+    <!-- फोटो कैप्चर करने के लिए लाइब्रेरी -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
+        /* 1. पूरे बैकग्राउंड में आतिशबाज़ी */
         body { 
             font-family: 'Arial', sans-serif; 
             background: #000; 
@@ -15,8 +17,7 @@
             color: white; overflow-x: hidden;
         }
 
-        /* आतिशबाज़ी एनीमेशन */
-        .fireworks {
+        .fireworks-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: -1;
             background: radial-gradient(circle, #fff 1.5px, transparent 1.5px);
@@ -26,10 +27,10 @@
         }
         @keyframes moveUp { from { transform: translateY(0); } to { transform: translateY(-1000px); } }
 
-        /* कार्ड स्टाइल */
+        /* 2. बधाई कार्ड स्टाइल (सबसे ऊपर) */
         #badhaiCard {
-            width: 100%; max-width: 450px; min-height: 480px;
-            border-radius: 20px; display: none;
+            width: 100%; max-width: 450px; min-height: 500px;
+            border-radius: 20px; display: none; 
             flex-direction: column; justify-content: center; align-items: center;
             text-align: center; padding: 25px;
             box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
@@ -39,35 +40,38 @@
         }
 
         #cardTitle { font-size: 2.5rem; color: #ffd700; text-shadow: 2px 2px 10px #000; margin-bottom: 10px; }
-        #previewPhoto { width: 140px; height: 140px; border-radius: 50%; border: 4px solid white; object-fit: cover; margin-bottom: 15px; display: none; }
-        #cardMessage { font-size: 1.5rem; font-weight: bold; text-shadow: 2px 2px 8px #000; line-height: 1.4; }
+        #previewPhoto { width: 150px; height: 150px; border-radius: 50%; border: 4px solid white; object-fit: cover; margin-bottom: 15px; display: none; box-shadow: 0 0 15px white; }
+        #cardMessage { font-size: 1.5rem; font-weight: bold; text-shadow: 2px 2px 8px #000; line-height: 1.4; color: #fff; }
         .from-tag { font-size: 1.2rem; background: #ffd700; color: #000; padding: 8px 25px; border-radius: 30px; font-weight: bold; margin-top: 20px; }
 
-        /* बटन और विज्ञापन */
+        /* 3. बटन और विज्ञापन एरिया */
         #actionArea { 
-            display: none; flex-direction: column; gap: 10px; width: 100%; max-width: 450px; margin-bottom: 30px; 
+            display: none; flex-direction: column; gap: 12px; width: 100%; max-width: 450px; margin-bottom: 30px; 
         }
-        .btn { padding: 16px; border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; text-align: center; border: none; color: white; }
-        .btn-share { background: #25D366; } /* व्हाट्सएप ग्रीन */
+        .btn { padding: 16px; border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; text-align: center; border: none; color: white; display: block; }
+        .btn-wa { background: #25D366; } /* व्हाट्सएप ग्रीन */
         .btn-dl { background: #3498db; }
 
-        .ad-box { width: 100%; display: flex; justify-content: center; margin: 10px 0; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .ad-container { width: 100%; display: flex; justify-content: center; margin: 10px 0; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
 
-        /* फॉर्म स्टाइल */
+        /* 4. फॉर्म स्टाइल (नीचे) */
         #formArea {
             background: #fff; padding: 25px; border-radius: 20px;
             width: 100%; max-width: 400px; box-sizing: border-box;
             color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
         }
+        #formArea h2 { text-align: center; color: #d81b60; margin-top: 0; }
+        label { font-weight: bold; display: block; margin-top: 15px; color: #555; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        .create-btn { background: #d81b60; color: white; width: 100%; border: none; padding: 16px; border-radius: 10px; font-weight: bold; font-size: 18px; margin-top: 15px; cursor: pointer; }
+        .create-btn { background: #d81b60; color: white; width: 100%; border: none; padding: 16px; border-radius: 10px; font-weight: bold; font-size: 18px; cursor: pointer; margin-top: 20px; }
 
-        .loading-text { display: none; color: #ffd700; font-weight: bold; margin-bottom: 10px; }
+        .status-msg { display: none; color: #ffd700; text-align: center; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="fireworks"></div>
+    <div class="fireworks-bg"></div>
 
     <!-- 1. बधाई कार्ड (ऊपर) -->
     <div id="badhaiCard">
@@ -77,14 +81,14 @@
         <div class="from-tag">प्रेषक: <span id="senderName"></span></div>
     </div>
 
-    <!-- 2. बटन और विज्ञापन क्षेत्र -->
+    <!-- 2. बटन और विज्ञापन -->
     <div id="actionArea">
-        <div id="loader" class="loading-text">फोटो तैयार हो रही है, कृपया रुकें...</div>
+        <div id="status" class="status-msg">कृपया प्रतीक्षा करें... कार्ड तैयार हो रहा है।</div>
         
-        <button class="btn btn-share" onclick="directShare()">सीधे व्हाट्सएप पर फोटो भेजें 📱</button>
+        <button class="btn btn-wa" onclick="shareCardAndLink()">व्हाट्सएप पर फोटो + लिंक भेजें 📱</button>
 
-        <!-- विज्ञापन कोड -->
-        <div class="ad-box">
+        <!-- विज्ञापन कोड (Banner Ad) -->
+        <div class="ad-container">
             <script type="text/javascript">
                 atOptions = {
                     'key' : '5ef61b9ce5db99a105f2eab3538cf716',
@@ -97,112 +101,124 @@
             <script type="text/javascript" src="https://www.highperformanceformat.com/5ef61b9ce5db99a105f2eab3538cf716/invoke.js"></script>
         </div>
 
-        <button class="btn btn-dl" onclick="justDownload()">गैलरी में सेव करें ⬇️</button>
+        <button class="btn btn-dl" onclick="downloadCard()">गैलरी में सेव करें ⬇️</button>
     </div>
 
     <!-- 3. फॉर्म (नीचे) -->
     <div id="formArea">
-        <h2 style="text-align:center; color:#d81b60; margin-top:0;">बधाई कार्ड बनाएँ</h2>
+        <h2>✨ अपना बधाई कार्ड बनाएँ</h2>
         <label>आपका नाम:</label>
         <input type="text" id="userInput" placeholder="अपना नाम लिखें">
+        
         <label>दोस्त का नाम:</label>
         <input type="text" id="friendInput" placeholder="दोस्त का नाम लिखें">
-        <label>दोस्त की फोटो चुनें (Optional):</label>
-        <input type="file" accept="image/*" onchange="previewImg(event)">
-        <label>अवसर:</label>
+
+        <label>दोस्त की फोटो चुनें (वैकल्पिक):</label>
+        <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+        
+        <label>अवसर चुनें:</label>
         <select id="occSelect">
-            <option value="shadi">शादी मुबारक (Special)</option>
+            <option value="shadi">शादी मुबारक (Fireworks Special)</option>
             <option value="bday">जन्मदिन (Birthday)</option>
             <option value="anni">सालगिरह (Anniversary)</option>
             <option value="job">नई नौकरी (Job)</option>
+            <option value="success">सफलता (Success)</option>
         </select>
-        <button class="create-btn" onclick="makeCard()">कार्ड तैयार करें</button>
+        
+        <button class="create-btn" onclick="buildNew()">अभी कार्ड बनाएँ</button>
     </div>
 
+    <div class="footer">डिजिटल बधाई ऐप - 2024</div>
+
     <script>
-        const config = {
+        const cardData = {
             'shadi': { img: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600', msg: 'शादी की बहुत-बहुत बधाई! भगवान आपकी जोड़ी सलामत रखे।', title: 'शादी मुबारक' },
-            'bday': { img: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600', msg: 'जन्मदिन की हार्दिक शुभकामनाएँ! खुशियाँ आपके कदम चूमे।', title: 'जन्मदिन बधाई' },
-            'anni': { img: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600', msg: 'सालगिरह मुबारक हो! प्यार सदा बना रहे।', title: 'सालगिरह मुबारक' },
-            'job': { img: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600', msg: 'नई नौकरी की बहुत बधाई! खूब तरक्की करें।', title: 'नई नौकरी बधाई' }
+            'bday': { img: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600', msg: 'जन्मदिन की हार्दिक शुभकामनाएँ! आप जियो हजारों साल।', title: 'जन्मदिन बधाई' },
+            'anni': { img: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600', msg: 'सालगिरह मुबारक हो! आप दोनों हमेशा खुश रहें।', title: 'सालगिरह मुबारक' },
+            'job': { img: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600', msg: 'नई नौकरी की बहुत बधाई! आप खूब तरक्की करें।', title: 'नई नौकरी बधाई' },
+            'success': { img: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=600', msg: 'आपकी शानदार सफलता पर हमें गर्व है! बहुत बधाई।', title: 'बधाई हो' }
         };
 
-        function previewImg(e) {
-            const out = document.getElementById('previewPhoto');
-            out.src = URL.createObjectURL(e.target.files[0]);
-            out.style.display = 'block';
+        function previewImage(event) {
+            const output = document.getElementById('previewPhoto');
+            output.src = URL.createObjectURL(event.target.files[0]);
+            output.style.display = 'block';
         }
 
-        function makeCard() {
+        function buildNew() {
             const s = document.getElementById('userInput').value;
             const f = document.getElementById('friendInput').value;
             const o = document.getElementById('occSelect').value;
 
             if(!s || !f) { alert("नाम भरें!"); return; }
 
-            const data = config[o];
-            document.getElementById('cardTitle').innerText = data.title;
-            document.getElementById('cardMessage').innerText = "प्रिय " + f + ", " + data.msg;
-            document.getElementById('senderName').innerText = s;
-            
-            const card = document.getElementById('badhaiCard');
-            card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${data.img}')`;
-            card.style.display = "flex";
+            renderView(s, f, o);
             document.getElementById('actionArea').style.display = "flex";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // सबसे महत्वपूर्ण: सीधे शेयर करने वाला फंक्शन
-        async function directShare() {
+        function renderView(s, f, o) {
+            const data = cardData[o] || cardData['shadi'];
             const card = document.getElementById('badhaiCard');
-            const loader = document.getElementById('loader');
-            loader.style.display = 'block';
+
+            document.getElementById('cardTitle').innerText = data.title;
+            document.getElementById('cardMessage').innerText = "प्रिय " + f + ", " + data.msg;
+            document.getElementById('senderName').innerText = s;
+            
+            card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${data.img}')`;
+            card.style.display = "flex";
+        }
+
+        // फोटो और लिंक एक साथ शेयर करने का फंक्शन
+        async function shareCardAndLink() {
+            const card = document.getElementById('badhaiCard');
+            const status = document.getElementById('status');
+            status.style.display = 'block';
 
             try {
                 const canvas = await html2canvas(card, { useCORS: true });
                 const dataUrl = canvas.toDataURL('image/png');
                 const blob = await (await fetch(dataUrl)).blob();
-                const file = new File([blob], 'BadhaiCard.png', { type: 'image/png' });
+                const file = new File([blob], 'Badhai_Card.png', { type: 'image/png' });
 
-                // क्या ब्राउज़र शेयरिंग सपोर्ट करता है?
+                const s = document.getElementById('userInput').value || "शुभचिंतक";
+                const f = document.getElementById('friendInput').value || "दोस्त";
+                const o = document.getElementById('occSelect').value;
+                const baseUrl = window.location.origin + window.location.pathname;
+                const myLink = `${baseUrl}?s=${encodeURIComponent(s)}&f=${encodeURIComponent(f)}&o=${o}`;
+
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
                         title: 'बधाई संदेश',
-                        text: 'आपके लिए एक खास बधाई कार्ड!'
+                        text: `प्रिय ${f}, आपके लिए एक सरप्राइज कार्ड है! यहाँ क्लिक करें और अपना भी बनाएँ: ${myLink}`,
                     });
                 } else {
-                    alert("आपका ब्राउज़र डायरेक्ट शेयर सपोर्ट नहीं करता। कृपया 'गैलरी में सेव' करें और व्हाट्सएप पर भेजें।");
+                    alert("आपका ब्राउज़र डायरेक्ट शेयरिंग सपोर्ट नहीं करता। कृपया फोटो डाउनलोड करें और लिंक कॉपी करके भेजें।");
                 }
             } catch (err) {
-                console.error('Sharing failed', err);
+                console.error("Error sharing:", err);
             }
-            loader.style.display = 'none';
+            status.style.display = 'none';
         }
 
-        function justDownload() {
+        function downloadCard() {
             const card = document.getElementById('badhaiCard');
             html2canvas(card, { useCORS: true }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'MeraBadhaiCard.png';
+                link.download = 'Mera_Badhai_Card.png';
                 link.href = canvas.toDataURL();
                 link.click();
             });
         }
 
         window.onload = function() {
-            const p = new URLSearchParams(window.location.search);
-            if (p.has('s')) {
-                // लिंक से आने पर कार्ड दिखाएं
-                const s = p.get('s'), f = p.get('f'), o = p.get('o');
-                const data = config[o] || config['shadi'];
-                document.getElementById('cardTitle').innerText = data.title;
-                document.getElementById('cardMessage').innerText = "प्रिय " + f + ", " + data.msg;
-                document.getElementById('senderName').innerText = s;
-                const card = document.getElementById('badhaiCard');
-                card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${data.img}')`;
-                card.style.display = "flex";
+            const params = new URLSearchParams(window.location.search);
+            const s = params.get('s'), f = params.get('f'), o = params.get('o');
+            if (s && f && o) {
+                renderView(s, f, o);
                 document.getElementById('actionArea').style.display = "flex";
+                window.scrollTo(0, 0);
             }
         };
     </script>
